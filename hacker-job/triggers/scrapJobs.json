@@ -1,0 +1,9 @@
+{
+    "type": "SCHEDULED",
+    "name": "scheduled-job-scrapper",
+    "function_name": "readRss",
+    "config": {
+        "schedule": "0 * * * *"
+    },
+    "disabled": false
+}
