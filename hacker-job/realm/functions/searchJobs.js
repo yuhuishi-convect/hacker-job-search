@@ -34,6 +34,41 @@ exports = async function searchJobs(payload, response) {
                 "highlights": { "$meta": "searchHighlights" }
             }
         },
+        {
+            $group: {
+                _id: '$guid',
+                description: { $first: '$description' },
+                title: { $first: '$titile' },
+                link: { $first: '$link' },
+                pubDate: { $first: '$pubDate' },
+                highlights: { $first: '$highlights' },
+            }
+        },
+        {
+            $set: {
+                title: {
+                    $slice: [
+                        {
+                            $split: ['$description', '\n']
+                        },
+                        1
+                    ]
+                },
+                company: {
+                    $slice: [
+                        {
+                            $split: ['$description', '|']
+                        },
+                        1
+                    ]
+                }
+            }
+        },
+        {
+            $sort: {
+                'highlights.score': -1
+            }
+        }
     ];
     // run pipeline
     const result = await jobCollection.aggregate(agg);
