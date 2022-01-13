@@ -1,26 +1,31 @@
 import Header from './components/Header';
 import SearchBar from './components/SearchBar';
 import JobList from './components/JobList';
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import JobListContext from './jobStore';
+import axios from 'axios';
 
 
-const JobListContext = React.createContext(
-  {
-    jobList:
-      [
-        { id: 1, description: 'Cool job1' },
-        { id: 2, description: 'Cool job2' },
-        { id: 3, description: 'Cool job3' },
-        { id: 4, description: 'Cool job4' },
-        { id: 5, description: 'Cool job5' }
-      ],
-    setJobList: () => {}
-  }
-);
+const httpClient = axios.create({
+  baseURL: 'https://us-west-2.aws.data.mongodb-api.com/app/hacker-job-geiwg/endpoint/jobs'
+})
 
 
 function App() {
   const [ jobList, setJobList ] = useState([]);
+
+  // load the initial jobs
+  useEffect(() => {
+    httpClient.get('/search')
+    .then(
+      resp => {
+        setJobList(resp.data);
+      }
+    )
+    .catch(err => console.log(err))
+  }, []);
+
+
 
   return (
     <main>
@@ -40,5 +45,5 @@ function App() {
   );
 };
 
-export { JobListContext };
+export {httpClient}
 export default App;
