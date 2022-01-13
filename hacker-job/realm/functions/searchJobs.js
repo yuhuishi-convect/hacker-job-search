@@ -6,70 +6,114 @@ exports = async function searchJobs(payload, response) {
     const indexName = "job-index";
 
     const query = payload.query.query;
+    let agg;
 
-    const agg = [
-        {
-            $search: {
-                text: {
-                    query: query,
-                    path: {
-                        'wildcard': '*'
+    if (!!!query) {
+        agg = [
+            {
+                $group: {
+                    _id: '$guid',
+                    description: { $first: '$description' },
+                    title: { $first: '$titile' },
+                    link: { $first: '$link' },
+                    pubDate: { $first: '$pubDate' },
+                    highlights: { $first: '$highlights' },
+                }
+            },
+            {
+                $set: {
+                    title: {
+                        $slice: [
+                            {
+                                $split: ['$description', '\n']
+                            },
+                            1
+                        ]
+                    },
+                    company: {
+                        $slice: [
+                            {
+                                $split: ['$description', '|']
+                            },
+                            1
+                        ]
                     }
-                },
-                highlight: {
-                    path: "description",
-                    maxNumPassages: 2
-                },
-                index: indexName
-            }
-        },
-        {
-            $project: {
-                "_id": 1,
-                "description": 1,
-                "title": 1,
-                "link": 1,
-                "pubDate": 1,
-                "guid": 1,
-                "highlights": { "$meta": "searchHighlights" }
-            }
-        },
-        {
-            $group: {
-                _id: '$guid',
-                description: { $first: '$description' },
-                title: { $first: '$titile' },
-                link: { $first: '$link' },
-                pubDate: { $first: '$pubDate' },
-                highlights: { $first: '$highlights' },
-            }
-        },
-        {
-            $set: {
-                title: {
-                    $slice: [
-                        {
-                            $split: ['$description', '\n']
-                        },
-                        1
-                    ]
-                },
-                company: {
-                    $slice: [
-                        {
-                            $split: ['$description', '|']
-                        },
-                        1
-                    ]
+                }
+            },
+            {
+                $sort: {
+                    pubDate: -1
                 }
             }
-        },
-        {
-            $sort: {
-                'highlights.score': -1
+        ]
+
+    } else {
+        agg = [
+            {
+                $search: {
+                    text: {
+                        query: query,
+                        path: {
+                            'wildcard': '*'
+                        }
+                    },
+                    highlight: {
+                        path: "description",
+                        maxNumPassages: 2
+                    },
+                    index: indexName
+                }
+            },
+            {
+                $project: {
+                    "_id": 1,
+                    "description": 1,
+                    "title": 1,
+                    "link": 1,
+                    "pubDate": 1,
+                    "guid": 1,
+                    "highlights": { "$meta": "searchHighlights" }
+                }
+            },
+            {
+                $group: {
+                    _id: '$guid',
+                    description: { $first: '$description' },
+                    title: { $first: '$titile' },
+                    link: { $first: '$link' },
+                    pubDate: { $first: '$pubDate' },
+                    highlights: { $first: '$highlights' },
+                }
+            },
+            {
+                $set: {
+                    title: {
+                        $slice: [
+                            {
+                                $split: ['$description', '\n']
+                            },
+                            1
+                        ]
+                    },
+                    company: {
+                        $slice: [
+                            {
+                                $split: ['$description', '|']
+                            },
+                            1
+                        ]
+                    }
+                }
+            },
+            {
+                $sort: {
+                    'highlights.score': -1
+                }
             }
-        }
-    ];
+        ];
+    }
+
+
     // run pipeline
     const result = await jobCollection.aggregate(agg);
     return result
