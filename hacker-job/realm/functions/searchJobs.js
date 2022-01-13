@@ -1,18 +1,20 @@
-exports = async function autoComplete(payload, response) {
+exports = async function searchJobs(payload, response) {
 
     // search the db
     const mongodb = context.services.get("RealmCluster");
     const jobCollection = mongodb.db("hacker-job").collection("jobs");
-    const indexName = "auto";
+    const indexName = "job-index";
 
     const query = payload.query.query;
 
     const agg = [
         {
             $search: {
-                autocomplete: {
+                text: {
                     query: query,
-                    path: "description"
+                    path: {
+                        'wildcard': '*'
+                    }
                 },
                 highlight: {
                     path: "description",
@@ -21,14 +23,17 @@ exports = async function autoComplete(payload, response) {
                 index: indexName
             }
         },
-        { $limit: 5 },
         {
             $project: {
+                "_id": 1,
                 "description": 1,
-                "_id": 0,
+                "title": 1,
+                "link": 1,
+                "pubDate": 1,
+                "guid": 1,
                 "highlights": { "$meta": "searchHighlights" }
             }
-        }
+        },
     ];
     // run pipeline
     const result = await jobCollection.aggregate(agg);

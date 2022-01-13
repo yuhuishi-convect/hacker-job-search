@@ -1,12 +1,17 @@
 [
     {
+        "name": "autoComplete",
+        "private": false,
+        "run_as_system": true
+    },
+    {
         "name": "readRss",
         "private": true,
         "run_as_system": true
     },
     {
-        "name": "autoComplete",
-        "private": true,
+        "name": "searchJobs",
+        "private": false,
         "run_as_system": true
     }
 ]

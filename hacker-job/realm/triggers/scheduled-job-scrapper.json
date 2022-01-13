@@ -1,0 +1,15 @@
+{
+    "name": "scheduled-job-scrapper",
+    "type": "SCHEDULED",
+    "config": {
+        "schedule": "0 * * * *"
+    },
+    "disabled": false,
+    "event_processors": {
+        "FUNCTION": {
+            "config": {
+                "function_name": "readRss"
+            }
+        }
+    }
+}
